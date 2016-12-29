@@ -7,12 +7,13 @@ scope: source.prototxt
 
 variables:
   var_type: '\b[A-Za-z_][A-Za-z_0-9]*\b'
-  float_type: '\b[-+]?[0-9]*\.?[0-9]*\b'
+  var_js_type: '\b[A-Za-z_\-][A-Za-z_0-9\-]*\b'
+  float_type: '\b[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\b'
   path_type: '\b(/)?([^/\0]+(/)?)+\b'
 
 contexts:
   main:
-    - include: comments
+    - include: comments-inline
     - include: layers
     - include: obejct-body
 
@@ -27,7 +28,7 @@ contexts:
       set: obejct-body
 
   obejct-body:
-    - include: comments
+    - include: comments-inline
     # key
     - match: '{{var_type}}'
       scope: entity.name.tag.layer.prototxt
@@ -51,43 +52,32 @@ contexts:
     - match: '{'
       set: obejct-body
       scope: punctuation.layer.prototxt
-    # string with quote
-    - match: '"{{var_type}}"'
+    # string without quote
+    - match: '{{var_js_type}}'
       scope: string.layer.prototxt
       pop: true
-    # string without quote
-    - match: '{{var_type}}'
+    # string with single quote
+    - match: "'{{var_js_type}}'"
+      scope: string.layer.prototxt
+      pop: true
+    # string with double quote
+    - match: '"{{var_js_type}}"'
       scope: string.layer.prototxt
       pop: true
     # number
     - match: '{{float_type}}'
+      scope: constant.numeric.layer.prototxt
+      pop: true
+    # path with single quote
+    - match: "'{{path_type}}'"
       scope: string.layer.prototxt
       pop: true
-    # path
+    # path with double quote
     - match: '"{{path_type}}"'
       scope: string.layer.prototxt
       pop: true
 
-  comments:
-    - match: /\*\*/
-      scope: comment.block.empty.proto
-      captures:
-        0: punctuation.definition.comment.proto
-    - include: comments-inline
   comments-inline:
-    - match: /\*
-      captures:
-        0: punctuation.definition.comment.proto
-      push:
-        - meta_scope: comment.block.proto
-        - match: \*/
-          captures:
-            0: punctuation.definition.comment.proto
-          pop: true
-    - match: \s*((//).*$\n?)
-      captures:
-        1: comment.line.double-slash.proto
-        2: punctuation.definition.comment.proto
     - match: \s*((#).*$\n?)
       captures:
         1: comment.line.double-slash.proto
