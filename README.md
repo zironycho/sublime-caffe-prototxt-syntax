@@ -1,2 +1,2 @@
-# sublime-caffe-prototxt-syntax-
+# sublime-caffe-prototxt-syntax
 Sublime syntax highlighting for caffe prototxt
